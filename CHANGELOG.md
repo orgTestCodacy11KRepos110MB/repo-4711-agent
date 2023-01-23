@@ -91,6 +91,8 @@ v0.31.0 (2023-01-31)
 
 - Introduce global configuration for logs. (@jcreixell)
 
+- Integrations: Introduce an `azure` integration. (@kgeckhart)
+
 ### Enhancements
 
 - Handle faro-web-sdk `View` meta in app_agent_receiver. (@rlankfo)
