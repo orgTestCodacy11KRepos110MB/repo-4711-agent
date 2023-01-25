@@ -173,59 +173,26 @@ func (vm *Evaluator) evaluateBlockOrBody(scope *Scope, assoc map[value.Value]ast
 			continue
 
 		case tf.IsAttr() && len(blocks) > 0:
-			return diag.Diagnostic{
-				Severity: diag.SeverityLevelError,
-				StartPos: ast.StartPos(blocks[0]).Position(),
-				EndPos:   ast.EndPos(blocks[len(blocks)-1]).Position(),
-				Message:  fmt.Sprintf("%q must be an attribute, but is used as a block", fullName),
-			}
+			return fmt.Errorf("%q must be an attribute, but is used as a block", fullName)
 		case tf.IsAttr() && len(attrs) == 0 && !tf.IsOptional():
-			return diag.Diagnostic{
-				Severity: diag.SeverityLevelError,
-				//TODO: We need to report the start and end position of the block where this attribute should be?
-				StartPos: ast.StartPos().Position(),
-				EndPos:   ast.EndPos().Position(),
-				Message:  fmt.Sprintf("missing required attribute %q", fullName),
-			}
+			return fmt.Errorf("missing required attribute %q", fullName)
 		case tf.IsAttr() && len(attrs) > 1:
 			// While blocks may be specified multiple times (when the struct field
 			// accepts a slice or an array), attributes may only ever be specified
 			// once.
-			return diag.Diagnostic{
-				Severity: diag.SeverityLevelError,
-				StartPos: ast.StartPos(attrs[0]).Position(),
-				EndPos:   ast.EndPos(attrs[len(attrs)-1]).Position(),
-				Message:  fmt.Sprintf("attribute %q may only be set once", fullName),
-			}
+			return fmt.Errorf("attribute %q may only be set once", fullName)
 
 		case tf.IsBlock() && len(attrs) > 0:
-			return diag.Diagnostic{
-				Severity: diag.SeverityLevelError,
-				StartPos: ast.StartPos(attrs[0]).Position(),
-				EndPos:   ast.EndPos(attrs[len(attrs)-1]).Position(),
-				Message:  fmt.Sprintf("%q must be a block, but is used as an attribute", fullName),
-			}
+			return fmt.Errorf("%q must be a block, but is used as an attribute", fullName)
 		case tf.IsBlock() && len(blocks) == 0 && !tf.IsOptional():
 			// TODO(rfratto): does it ever make sense for children blocks to be required?
-			return diag.Diagnostic{
-				Severity: diag.SeverityLevelError,
-				//TODO: We need to report the start and end position of the block where this block should be?
-				StartPos: ast.StartPos().Position(),
-				EndPos:   ast.EndPos().Position(),
-				Message:  fmt.Sprintf("missing required block %q", fullName),
-			}
+			return fmt.Errorf("missing required block %q", fullName)
 
 		case len(attrs) > 0 && len(blocks) > 0:
 			// NOTE(rfratto): it's not possible to reach this condition given the
 			// statements above, but this is left in defensively in case there is a
 			// bug with the validity checks.
-			return diag.Diagnostic{
-				Severity: diag.SeverityLevelError,
-				//TODO: We need to report the start and end position of the parent block?
-				StartPos: ast.StartPos().Position(),
-				EndPos:   ast.EndPos().Position(),
-				Message:  fmt.Sprintf("%q may only be used as a block or an attribute, but found both", fullName),
-			}
+			return fmt.Errorf("%q may only be used as a block or an attribute, but found both", fullName)
 		}
 
 		field := rv.FieldByIndex(tf.Index)
