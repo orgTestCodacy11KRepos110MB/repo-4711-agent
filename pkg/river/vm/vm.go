@@ -173,7 +173,13 @@ func (vm *Evaluator) evaluateBlockOrBody(scope *Scope, assoc map[value.Value]ast
 			continue
 
 		case tf.IsAttr() && len(blocks) > 0:
-			return fmt.Errorf("%q must be an attribute, but is used as a block", fullName)
+			//return fmt.Errorf("%q must be an attribute, but is used as a block", fullName)
+			return diag.Diagnostic{
+				Severity: diag.SeverityLevelError,
+				StartPos: ast.StartPos(blocks[0]).Position(),
+				EndPos:   ast.EndPos(blocks[len(blocks)-1]).Position(),
+				Message:  fmt.Sprintf("%q must be an attribute, but is used as a block", fullName),
+			}
 		case tf.IsAttr() && len(attrs) == 0 && !tf.IsOptional():
 			return fmt.Errorf("missing required attribute %q", fullName)
 		case tf.IsAttr() && len(attrs) > 1:

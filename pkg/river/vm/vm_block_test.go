@@ -81,6 +81,27 @@ func TestVM_Block_Attributes(t *testing.T) {
 		require.EqualError(t, err, `"number" must be an attribute, but is used as a block`)
 	})
 
+	t.Run("Fails if attribute used as block 2", func(t *testing.T) {
+		type innerBlock struct {
+		}
+
+		type block struct {
+			Number1 int        `river:"number1,block"`
+			Number2 innerBlock `river:"number2,attr"`
+			Number3 int        `river:"number3,block"`
+		}
+
+		input := `some_block {
+			number1 {}
+			number2 {} 
+			number3 {}
+		}`
+		eval := vm.New(parseBlock(t, input))
+
+		err := eval.Evaluate(nil, &block{})
+		require.EqualError(t, err, `"number" must be an attribute, but is used as a block`)
+	})
+
 	t.Run("Fails if required attributes are not present", func(t *testing.T) {
 		type block struct {
 			Number int    `river:"number,attr"`
